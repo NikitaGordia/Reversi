@@ -4,6 +4,8 @@ interface Board {
 
     fun turn(to: Point)
 
+    fun registerBoardChangeListener(onBoardChange: (BoardInfo) -> Unit)
+
     data class BoardInfo(
         val board: String, // ....BW./n...WWW./n..BBWB../n
         val playerTurn: Int, // 1/2

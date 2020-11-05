@@ -1,20 +1,28 @@
 interface Board {
 
-    fun getInfo(): BoardInfo
+    fun getAvailableTurns(playerMatrix: Array<BooleanArray>, enemyMatrix: Array<BooleanArray>): Array<Point>
 
-    fun turn(to: Point)
+    fun makeTurn(playerMatrix: Array<BooleanArray>, enemyMatrix: Array<BooleanArray>, playerTurn: Point): BoardState
 
-    fun registerBoardChangeListener(onBoardChange: (BoardInfo) -> Unit)
+    data class Point(val x: Byte, val y: Byte)
 
-    data class BoardInfo(
-        val board: String, // ....BW./n...WWW./n..BBWB../n
-        val playerTurn: Int, // 1/2
-        val availableTurns: List<AvailableTurn>,
-        val blackHole: Point
-    ) {
+    data class BoardState(val player: Array<BooleanArray>, val enemy: Array<BooleanArray>)
+}
 
-        data class AvailableTurn(val to: Point)
+class BoardMock: Board {
+
+    override fun getAvailableTurns(
+        playerMatrix: Array<BooleanArray>,
+        enemyMatrix: Array<BooleanArray>
+    ): Array<Board.Point> {
+        return arrayOf()
     }
 
-    data class Point(val x: Int, val y: Int)
+    override fun makeTurn(
+        playerMatrix: Array<BooleanArray>,
+        enemyMatrix: Array<BooleanArray>,
+        playerTurn: Board.Point
+    ): Board.BoardState {
+        return Board.BoardState(arrayOf(), arrayOf())
+    }
 }

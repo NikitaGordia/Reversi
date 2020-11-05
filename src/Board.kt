@@ -4,7 +4,11 @@ interface Board {
 
     fun makeTurn(state: BoardState, turn: Point)
 
-    data class Point(val x: Int, val y: Int)
+    data class Point(val x: Int, val y: Int) : Comparable<Point> {
+
+        override fun compareTo(other: Point): Int =
+            x.compareTo(other.x).takeIf { it != 0 } ?: y.compareTo(other.y)
+    }
 
     interface BoardState {
 
@@ -21,8 +25,10 @@ interface Board {
 
         fun getScore(): Point
 
-        fun mirrorState(): BoardState
+        fun inverseState()
 
         fun display()
+
+        fun copyState(): BoardState
     }
 }

@@ -23,7 +23,8 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
                     for (k in 0 until 8)
                         runSearch(state, i, j, k, turns)
                 }
-        return turns
+        val uniq = TreeSet<Board.Point>(turns)
+        return uniq.toList()
     }
 
     override fun makeTurn(state: Board.BoardState, turn: Board.Point) {
@@ -112,8 +113,11 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             return Board.Point(x, y)
         }
 
-        override fun mirrorState(): Board.BoardState =
-            BoardStateImpl(enemyMatrix, matrix)
+        override fun inverseState() {
+            val tm = matrix
+            matrix = enemyMatrix
+            enemyMatrix = tm
+        }
 
         override fun display() {
             println()
@@ -128,6 +132,8 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
                 }
             println()
         }
+
+        override fun copyState(): Board.BoardState = BoardStateImpl(matrix, enemyMatrix)
 
         private fun get(matrix: Long, x: Int, y: Int): Long =
             ((matrix shr ((x shl 3) + y)) and 0b01)

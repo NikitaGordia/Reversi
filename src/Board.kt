@@ -1,20 +1,28 @@
 interface Board {
 
-    fun getInfo(): BoardInfo
+    fun getAvailableTurns(state: BoardState): List<Point>
 
-    fun turn(to: Point)
-
-    fun registerBoardChangeListener(onBoardChange: (BoardInfo) -> Unit)
-
-    data class BoardInfo(
-        val board: String, // ....BW./n...WWW./n..BBWB../n
-        val playerTurn: Int, // 1/2
-        val availableTurns: List<AvailableTurn>,
-        val blackHole: Point
-    ) {
-
-        data class AvailableTurn(val to: Point)
-    }
+    fun makeTurn(state: BoardState, turn: Point)
 
     data class Point(val x: Int, val y: Int)
+
+    interface BoardState {
+
+        companion object {
+
+            const val MY_POINT = 1.toByte()
+            const val ENEMY_POINT = 2.toByte()
+            const val EMPTY_POINT = 3.toByte()
+        }
+
+        fun takePoint(x: Int, y: Int)
+
+        fun get(x: Int, y: Int): Byte
+
+        fun getScore(): Point
+
+        fun mirrorState(): BoardState
+
+        fun display()
+    }
 }

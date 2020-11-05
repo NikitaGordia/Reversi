@@ -1,28 +1,34 @@
 interface Board {
 
-    fun getAvailableTurns(playerMatrix: Array<BooleanArray>, enemyMatrix: Array<BooleanArray>): Array<Point>
+    fun getAvailableTurns(state: BoardState): List<Point>
 
-    fun makeTurn(playerMatrix: Array<BooleanArray>, enemyMatrix: Array<BooleanArray>, playerTurn: Point): BoardState
+    fun makeTurn(state: BoardState, turn: Point)
 
-    data class Point(val x: Byte, val y: Byte)
+    data class Point(val x: Int, val y: Int) : Comparable<Point> {
 
-    data class BoardState(val player: Array<BooleanArray>, val enemy: Array<BooleanArray>)
-}
-
-class BoardMock: Board {
-
-    override fun getAvailableTurns(
-        playerMatrix: Array<BooleanArray>,
-        enemyMatrix: Array<BooleanArray>
-    ): Array<Board.Point> {
-        return arrayOf()
+        override fun compareTo(other: Point): Int =
+            x.compareTo(other.x).takeIf { it != 0 } ?: y.compareTo(other.y)
     }
 
-    override fun makeTurn(
-        playerMatrix: Array<BooleanArray>,
-        enemyMatrix: Array<BooleanArray>,
-        playerTurn: Board.Point
-    ): Board.BoardState {
-        return Board.BoardState(arrayOf(), arrayOf())
+    interface BoardState {
+
+        companion object {
+
+            const val MY_POINT = 1.toByte()
+            const val ENEMY_POINT = 2.toByte()
+            const val EMPTY_POINT = 3.toByte()
+        }
+
+        fun takePoint(x: Int, y: Int)
+
+        fun get(x: Int, y: Int): Byte
+
+        fun getScore(): Point
+
+        fun inverseState()
+
+        fun display()
+
+        fun copyState(): BoardState
     }
 }

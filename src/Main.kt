@@ -3,7 +3,6 @@ import board.BoardImpl
 import bot.Bot
 
 fun main() {
-
     val blackHole = Board.Point(2, 4)
     val board = BoardImpl(blackHole)
     val state = BoardImpl.BoardStateImpl(blackHole)
@@ -30,6 +29,7 @@ fun runGame(action: () -> Unit) {
         try {
             action()
         } catch (e: Bot.GameOverException) {
+            println("GAME IS OVER")
             isGameOver = true
         }
     } while (!isGameOver)

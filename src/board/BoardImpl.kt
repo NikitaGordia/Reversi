@@ -33,6 +33,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
     }
 
     override fun makeTurn(state: Board.BoardState, turn: Board.Point) {
+        if (state.get(turn.x, turn.y) != Board.BoardState.EMPTY_POINT) return
         state.takePoint(turn.x, turn.y)
         for (k in 0 until 8)
             runOccupationSearch(state, turn.x, turn.y, k)
@@ -133,7 +134,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         }
 
         override fun display() {
-            println()
+            println("B: $matrix, W: $enemyMatrix")
             for (i in 0 until 8)
                 for (j in 0 until 8) {
                     val ch = when {

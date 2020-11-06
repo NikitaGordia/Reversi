@@ -5,6 +5,7 @@ import java.lang.Exception
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 class Bot(
     private val board: Board,
@@ -27,7 +28,7 @@ class Bot(
                     return@runLongJob Result(null)
                 }
                 availableTurns.size == 1 -> {
-                    board.makeTurn(state, availableTurns[0])
+                    return@runLongJob Result(availableTurns[0])
                 }
             }
 
@@ -62,9 +63,6 @@ class Bot(
         turnsPosition: Byte
     ): Byte {
         board.makeTurn(state, this)
-
-        //state.display()
-
         return minimax(
             depth,
             state.apply { inverseState() },
@@ -174,10 +172,11 @@ class Bot(
             future.get(1980, TimeUnit.MILLISECONDS).also {
                 println("#GOODTIME")
             }
-        } catch (e: Exception) {
+        } catch (e: TimeoutException) {
             println("#TIMEOUT")
             onTimeLimit()
         })
+        executor.shutdownNow()
     }
 
     data class Result<T>(val value: T? = null)

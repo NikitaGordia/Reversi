@@ -5,19 +5,10 @@ import board.Board
 class Bot (
     private val isBlack: Boolean,
     private val board: Board,
-    private val state: Board.BoardState,
-    private val depth: Byte
+    private val recDepth: Byte
 ) {
 
-    fun makeTurn() {
-
-        val state = state.copyState()
-
-        if (!isBlack) {
-            state.inverseState()
-        }
-
-        // Init board
+    fun makeTurn(state: Board.BoardState) {
 
         // Get available turns for bot.Bot
         val availableTurns = board.getAvailableTurns(state)
@@ -34,12 +25,10 @@ class Bot (
         // Evaluate turns using minimax
         val evaluations = ByteArray(availableTurns.size) {
             availableTurns[it].evaluateTurn(
-                (depth - 1).toByte(),
-                isMaximizing = true,
-                state = state.copyState().apply { inverseState() },
+                (recDepth - 1).toByte(),
+                state = state.copyState(),
                 min = Byte.MAX_VALUE,
-                max = Byte.MIN_VALUE,
-                isGameOver = false
+                max = Byte.MIN_VALUE
             )
         }
 
@@ -52,22 +41,19 @@ class Bot (
      */
     fun Board.Point.evaluateTurn(
         depth: Byte,
-        isMaximizing: Boolean,
-        state: Board.BoardState,
+        state: Board.BoardState, // state.copyState()
         min: Byte,
-        max: Byte,
-        isGameOver: Boolean
+        max: Byte
     ): Byte {
         board.makeTurn(state, this)
 
+        //state.display()
+
         return minimax(
             depth,
-            board,
-            isMaximizing,
-            state.copyState().apply { inverseState() },
+            state.apply { inverseState() },
             min,
-            max,
-            isGameOver
+            max
         )
     }
 
@@ -76,28 +62,23 @@ class Bot (
      */
     fun minimax(
         depth: Byte,
-        board: Board,
-        isMaximizing: Boolean,
         state: Board.BoardState,
         min: Byte,
-        max: Byte,
-        isGameOver: Boolean
+        max: Byte
     ): Byte {
+        val availableTurns: List<Board.Point>? = board.getAvailableTurns(state)
         when {
-            depth == 0.toByte() || isGameOver -> {
+            availableTurns == null || depth == 0.toByte() -> {
                 return state.getScore().x.toByte()
             }
-            isMaximizing -> {
+            (recDepth - depth) % 2 == 0 -> {
                 var maxEval = Byte.MIN_VALUE
-                val availableTurns = board.getAvailableTurns(state)
                 for (i in availableTurns.indices) {
                     val evaluation = availableTurns[i].evaluateTurn(
                         (depth - 1).toByte(),
-                        !isMaximizing,
-                        state = state.copyState().apply { inverseState() },
+                        state = state.copyState(),
                         min = min,
-                        max = max,
-                        isGameOver = false
+                        max = max
                     )
                     maxEval = maxOf(maxEval, evaluation)
                     val newMax = maxOf(max, maxEval)
@@ -107,17 +88,14 @@ class Bot (
                 }
                 return maxEval
             }
-            !isMaximizing -> {
+            (recDepth - depth) % 2 == 1 -> {
                 var minEval = Byte.MAX_VALUE
-                val availableTurns = board.getAvailableTurns(state)
                 for (i in availableTurns.indices) {
                     val evaluation = availableTurns[i].evaluateTurn(
                         (depth - 1).toByte(),
-                        !isMaximizing,
-                        state = state.copyState().apply { inverseState() },
+                        state = state.copyState(),
                         min = min,
-                        max = max,
-                        isGameOver = false
+                        max = max
                     )
                     minEval = minOf(minEval, evaluation)
                     val newMin = minOf(min, minEval)

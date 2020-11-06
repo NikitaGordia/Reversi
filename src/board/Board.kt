@@ -32,6 +32,8 @@ interface Board {
         fun display()
 
         fun copyState(): BoardState
+
+        fun isEqual(state: BoardState): Boolean
     }
 }
 /*

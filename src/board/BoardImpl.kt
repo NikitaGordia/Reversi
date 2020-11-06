@@ -150,6 +150,12 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
 
         override fun copyState(): Board.BoardState = BoardStateImpl(blackHole, matrix, enemyMatrix)
 
+        override fun isEqual(state: Board.BoardState): Boolean {
+            if (state is BoardStateImpl) {
+                return (state.matrix == matrix && state.enemyMatrix == enemyMatrix) || (state.matrix == enemyMatrix && state.enemyMatrix == matrix)
+            } else return false
+        }
+
         private fun get(matrix: Long, x: Int, y: Int): Long =
             ((matrix shr ((x shl 3) + y)) and 0b01)
     }

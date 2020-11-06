@@ -1,3 +1,5 @@
+package board
+
 interface Board {
 
     fun getAvailableTurns(state: BoardState): List<Point>

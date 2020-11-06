@@ -1,3 +1,5 @@
+package board
+
 import java.util.*
 
 class BoardImpl(private val blackHole: Board.Point) : Board {
@@ -56,7 +58,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             posX += dirV[dir].x
             posY += dirV[dir].y
         } while (checkPoint(posX, posY) &&
-            state.get(posX, posX) == Board.BoardState.ENEMY_POINT
+            state.get(posX, posY) == Board.BoardState.ENEMY_POINT
         )
     }
 
@@ -79,8 +81,9 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         x >= 0 && x < 8 && y >= 0 && y < 8 && !(x == blackHole.x && y == blackHole.y)
 
     data class BoardStateImpl(
-        private var matrix: Long = 34359738368,//68853694464,
-        private var enemyMatrix: Long = 69659000832//34628173824
+        private val blackHole: Board.Point,
+        private var matrix: Long = 68853694464,
+        private var enemyMatrix: Long = 34628173824
     ) : Board.BoardState {
 
         companion object {
@@ -124,6 +127,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             for (i in 0 until 8)
                 for (j in 0 until 8) {
                     val ch = when {
+                        i == blackHole.x && j == blackHole.y -> 'O'
                         get(matrix, i, j) > 0 -> 'B'
                         get(enemyMatrix, i, j) > 0 -> 'W'
                         else -> '.'
@@ -133,7 +137,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             println()
         }
 
-        override fun copyState(): Board.BoardState = BoardStateImpl(matrix, enemyMatrix)
+        override fun copyState(): Board.BoardState = BoardStateImpl(blackHole, matrix, enemyMatrix)
 
         private fun get(matrix: Long, x: Int, y: Int): Long =
             ((matrix shr ((x shl 3) + y)) and 0b01)

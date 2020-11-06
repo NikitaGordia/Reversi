@@ -176,7 +176,7 @@ class Bot(
         val future: Future<Result<Board.Point>> = executor.submit<Result<Board.Point>>(job)
 
         onResult(try {
-            future.get(1980, TimeUnit.MILLISECONDS)
+            future.get(1990, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {
             onTimeLimit()
         })

@@ -19,7 +19,7 @@ fun main() {
             var turn = 0
             fun isBlackTurn() = turn % 2 == 0
 
-            val botBlack: IBot = Bot(board, 5)
+            val botBlack: IBot = Bot(board, 4)
             val botWhite: IBot = RandomBot(board)
 
             var prevState = state.copyState()

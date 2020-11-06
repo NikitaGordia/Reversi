@@ -1,5 +1,8 @@
 package board
 
+import board.Board.BoardState.Companion.EMPTY_POINT
+import board.Board.BoardState.Companion.ENEMY_POINT
+import board.Board.BoardState.Companion.MY_POINT
 import java.util.*
 import kotlin.collections.ArrayDeque
 
@@ -95,9 +98,20 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
 
         companion object {
 
-            const val MY_POINT = 1.toByte()
-            const val ENEMY_POINT = 2.toByte()
-            const val EMPTY_POINT = 3.toByte()
+            private const val C = 20
+            private const val B = 6
+
+            private val PENALTIES = arrayOf(
+                //            0  1  2  3  4  5  6  7
+                /*0*/ arrayOf(C, B, B, B, B, B, B, C),
+                /*1*/ arrayOf(B, B, 1, 1, 1, 1, B, B),
+                /*2*/ arrayOf(B, 1, B, 1, 1, B, 1, B),
+                /*3*/ arrayOf(B, 1, 1, B, B, 1, 1, B),
+                /*4*/ arrayOf(B, 1, 1, B, B, 1, 1, B),
+                /*5*/ arrayOf(B, 1, B, 1, 1, B, 1, B),
+                /*6*/ arrayOf(B, B, 1, 1, 1, 1, B, B),
+                /*7*/ arrayOf(C, B, B, B, B, B, B, C)
+            )
         }
 
         override fun takePoint(x: Int, y: Int) {
@@ -117,8 +131,9 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             var y = 0
             for (i in 0 until 8)
                 for (j in 0 until 8) {
-                    x += if (get(matrix, i, j) > 0) 1 else 0
-                    y += if (get(enemyMatrix, i, j) > 0) 1 else 0
+                    val score = PENALTIES[i][j]
+                    x += if (get(matrix, i, j) > 0) score else 0
+                    y += if (get(enemyMatrix, i, j) > 0) score else 0
                 }
             return Board.Point(x, y)
         }

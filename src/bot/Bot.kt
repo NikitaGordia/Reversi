@@ -3,15 +3,14 @@ package bot
 import board.Board
 
 class Bot (
-    private val isBlack: Boolean,
     private val board: Board,
     private val recDepth: Byte
 ) {
 
-    fun makeTurn(state: Board.BoardState) {
+    fun makeTurn(state: Board.BoardState, debugTime: Long = System.currentTimeMillis()) {
 
         // Get available turns for bot.Bot
-        val availableTurns = board.getAvailableTurns(state)
+        val availableTurns = board.getAvailableTurns(state) ?: throw GameOverException()
 
         when {
             availableTurns.isEmpty() -> {
@@ -34,6 +33,7 @@ class Bot (
 
         // Make the best evaluated turn
         board.makeTurn(state, availableTurns[evaluations.indexOfMin()])
+        println(System.currentTimeMillis() - debugTime)
     }
 
     /**
@@ -109,10 +109,6 @@ class Bot (
         }
     }
 
-    class MinimaxNotMetException(
-        message: String = "Minimax didn't meet any of the requirements to continue the computation"
-    ) : RuntimeException(message)
-
     /**
      * Find the index of the minimal element of the array
      */
@@ -129,4 +125,12 @@ class Bot (
 
         return minI
     }
+
+    class MinimaxNotMetException(
+        message: String = "Minimax didn't meet any of the requirements to continue the computation"
+    ) : RuntimeException(message)
+
+    class GameOverException(
+        message: String = "Game over"
+    ) : RuntimeException(message)
 }

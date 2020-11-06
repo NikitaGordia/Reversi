@@ -88,6 +88,9 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         private var enemyMatrix: Long = 34628173824
     ) : Board.BoardState {
 
+        var color = 'B'
+        var enemyColor = 'W'
+
         companion object {
 
             const val MY_POINT = 1.toByte()
@@ -122,6 +125,10 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             val tm = matrix
             matrix = enemyMatrix
             enemyMatrix = tm
+
+            val tc = color
+            color = enemyColor
+            enemyColor = tc
         }
 
         override fun display() {
@@ -130,8 +137,8 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
                 for (j in 0 until 8) {
                     val ch = when {
                         i == blackHole.x && j == blackHole.y -> 'O'
-                        get(matrix, i, j) > 0 -> 'B'
-                        get(enemyMatrix, i, j) > 0 -> 'W'
+                        get(matrix, i, j) > 0 -> color
+                        get(enemyMatrix, i, j) > 0 -> enemyColor
                         else -> '.'
                     }
                     if (j == 7) println(ch) else print(ch)

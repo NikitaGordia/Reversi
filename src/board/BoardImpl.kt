@@ -5,6 +5,8 @@ import board.Board.BoardState.Companion.ENEMY_POINT
 import board.Board.BoardState.Companion.MY_POINT
 import java.util.*
 import kotlin.collections.ArrayDeque
+import kotlin.math.max
+import kotlin.math.round
 
 class BoardImpl(private val blackHole: Board.Point) : Board {
 
@@ -98,10 +100,13 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
 
         companion object {
 
-            private const val C = 6
-            private const val B = 4
-            private const val G = 1
-            private const val R = 2
+            private const val C = 6 //6
+            private const val B = 3 //4
+            private const val G = 1 //1
+            private const val R = 2 //2
+
+            private const val BACK_PENALTIES = 0.2 //0.3 - 99, 98, 99; 0,2 - 99; 0.1 -
+
 
             private val PENALTIES = arrayOf(
                 //            0  1  2  3  4  5  6  7
@@ -129,15 +134,21 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         }
 
         override fun getScore(): Board.Point {
-            var x = 0
-            var y = 0
+            var b = 0
+            var w = 0
             for (i in 0 until 8)
                 for (j in 0 until 8) {
                     val score = PENALTIES[i][j]
-                    x += if (get(matrix, i, j) > 0) score else 0
-                    y += if (get(enemyMatrix, i, j) > 0) score else 0
+                    if (get(matrix, i, j) > 0) {
+                        b += score
+                        w -= (BACK_PENALTIES * score).toInt()
+                    }
+                    if (get(enemyMatrix, i, j) > 0) {
+                        w += score
+                        b += (BACK_PENALTIES * score).toInt()
+                    }
                 }
-            return Board.Point(x, y)
+            return Board.Point(b, max(w, 1))
         }
 
         override fun inverseState() {

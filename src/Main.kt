@@ -1,13 +1,12 @@
+import board.Board
+import board.BoardImpl
+import bot.Bot
 
 fun main() {
-    val board = BoardImpl(Board.Point(2, 4))
-    val state = BoardImpl.BoardStateImpl()
-    state.display()
-    val turns = board.getAvailableTurns(state)
-    print(turns)
-    board.makeTurn(state, turns[0])
-    state.display()
-
-    board.makeTurn(state, turns[1])
+    val blackHole = Board.Point(2, 4)
+    val board = BoardImpl(blackHole)
+    val state = BoardImpl.BoardStateImpl(blackHole)
+    val bot = Bot(true, board, state, 5)
+    bot.makeTurn()
     state.display()
 }

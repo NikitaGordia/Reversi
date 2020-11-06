@@ -1,45 +1,42 @@
-import util.evaluateMatrix
-import util.indexOfMin
+package bot
+
+import board.Board
 
 class Bot (
     private val isBlack: Boolean,
     private val board: Board,
-    private val white: Array<BooleanArray>,
-    private val black: Array<BooleanArray>,
+    private val state: Board.BoardState,
     private val depth: Byte
 ) {
 
     fun makeTurn() {
 
-        // Init board
-        val botMatrix = if (isBlack) black else white
-        val humanMatrix = if (isBlack) white else black
+        val state = state.copyState()
 
-        // Get available turns for Bot
-        val availableTurns = board.getAvailableTurns(botMatrix, humanMatrix)
+        if (!isBlack) {
+            state.inverseState()
+        }
+
+        // Init board
+
+        // Get available turns for bot.Bot
+        val availableTurns = board.getAvailableTurns(state)
 
         when {
             availableTurns.isEmpty() -> {
-                pass()
+                return
             }
             availableTurns.size == 1 -> {
-                board.makeTurn(
-                    playerMatrix = botMatrix,
-                    enemyMatrix = humanMatrix,
-                    playerTurn = availableTurns[0]
-                )
+                board.makeTurn(state, availableTurns[0])
             }
         }
-
-        System.gc()
 
         // Evaluate turns using minimax
         val evaluations = ByteArray(availableTurns.size) {
             availableTurns[it].evaluateTurn(
                 (depth - 1).toByte(),
                 isMaximizing = true,
-                playerMatrix = botMatrix,
-                enemyMatrix = humanMatrix,
+                state = state.copyState().apply { inverseState() },
                 min = Byte.MAX_VALUE,
                 max = Byte.MIN_VALUE,
                 isGameOver = false
@@ -47,17 +44,8 @@ class Bot (
         }
 
         // Make the best evaluated turn
-        board.makeTurn(
-            playerMatrix = botMatrix,
-            enemyMatrix = humanMatrix,
-            playerTurn = availableTurns[evaluations.indexOfMin()]
-        )
+        board.makeTurn(state, availableTurns[evaluations.indexOfMin()])
     }
-
-    /**
-     * Do nothing
-     */
-    private fun pass() {}
 
     /**
      * Evaluate the player's turn with regards to the given board matrices
@@ -65,24 +53,18 @@ class Bot (
     fun Board.Point.evaluateTurn(
         depth: Byte,
         isMaximizing: Boolean,
-        playerMatrix: Array<BooleanArray>,
-        enemyMatrix: Array<BooleanArray>,
+        state: Board.BoardState,
         min: Byte,
         max: Byte,
         isGameOver: Boolean
     ): Byte {
-        val (playerMatrixAfterTurn, enemyMatrixAfterTurn) = board.makeTurn(
-            playerMatrix,
-            enemyMatrix,
-            this
-        )
+        board.makeTurn(state, this)
 
         return minimax(
             depth,
             board,
             isMaximizing,
-            enemyMatrixAfterTurn,
-            playerMatrixAfterTurn,
+            state.copyState().apply { inverseState() },
             min,
             max,
             isGameOver
@@ -96,25 +78,23 @@ class Bot (
         depth: Byte,
         board: Board,
         isMaximizing: Boolean,
-        playerMatrix: Array<BooleanArray>,
-        enemyMatrix: Array<BooleanArray>,
+        state: Board.BoardState,
         min: Byte,
         max: Byte,
         isGameOver: Boolean
     ): Byte {
         when {
             depth == 0.toByte() || isGameOver -> {
-                return playerMatrix.evaluateMatrix()
+                return state.getScore().x.toByte()
             }
             isMaximizing -> {
                 var maxEval = Byte.MIN_VALUE
-                val availableTurns = board.getAvailableTurns(playerMatrix, enemyMatrix)
+                val availableTurns = board.getAvailableTurns(state)
                 for (i in availableTurns.indices) {
                     val evaluation = availableTurns[i].evaluateTurn(
                         (depth - 1).toByte(),
                         !isMaximizing,
-                        playerMatrix = enemyMatrix,
-                        enemyMatrix = playerMatrix,
+                        state = state.copyState().apply { inverseState() },
                         min = min,
                         max = max,
                         isGameOver = false
@@ -129,13 +109,12 @@ class Bot (
             }
             !isMaximizing -> {
                 var minEval = Byte.MAX_VALUE
-                val availableTurns = board.getAvailableTurns(playerMatrix, enemyMatrix)
+                val availableTurns = board.getAvailableTurns(state)
                 for (i in availableTurns.indices) {
                     val evaluation = availableTurns[i].evaluateTurn(
                         (depth - 1).toByte(),
                         !isMaximizing,
-                        playerMatrix = enemyMatrix,
-                        enemyMatrix = playerMatrix,
+                        state = state.copyState().apply { inverseState() },
                         min = min,
                         max = max,
                         isGameOver = false
@@ -155,4 +134,21 @@ class Bot (
     class MinimaxNotMetException(
         message: String = "Minimax didn't meet any of the requirements to continue the computation"
     ) : RuntimeException(message)
+
+    /**
+     * Find the index of the minimal element of the array
+     */
+    private fun ByteArray.indexOfMin(): Int {
+        var minI = -1
+        var min = Byte.MAX_VALUE
+
+        forEachIndexed { i, elem ->
+            if (elem < min) {
+                min = elem
+                minI = i
+            }
+        }
+
+        return minI
+    }
 }

@@ -1,43 +1,55 @@
 package bot
 
 import board.Board
+import java.lang.Exception
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
-class Bot (
+class Bot(
     private val board: Board,
     private val recDepth: Byte
 ): IBot {
 
-    override fun makeTurn(state: Board.BoardState) {
+    private var minValue: Int = Int.MAX_VALUE
+    private var minValuePosition: Byte = 0
 
-        // Get available turns for bot.Bot
+    override fun makeTurn(state: Board.BoardState) {
+        minValue = Int.MAX_VALUE
+        minValuePosition = 0
+
         val availableTurns = board.getAvailableTurns(state) ?: throw GameOverException()
 
-        when {
-            availableTurns.isEmpty() -> {
-                return
+        runLongJob(job = {
+            // Get available turns for bot.Bot
+            when {
+                availableTurns.isEmpty() -> {
+                    return@runLongJob Result(null)
+                }
+                availableTurns.size == 1 -> {
+                    return@runLongJob Result(availableTurns[0])
+                }
             }
-            availableTurns.size == 1 -> {
-                board.makeTurn(state, availableTurns[0])
+
+            // Evaluate turns using minimax
+            val evaluations = ByteArray(availableTurns.size) {
+                availableTurns[it].evaluateTurn(
+                    (recDepth - 1).toByte(),
+                    state = state.copyState(),
+                    min = Byte.MAX_VALUE,
+                    max = Byte.MIN_VALUE,
+                    turnsPosition = it.toByte()
+                )
             }
-        }
 
-        // Evaluate turns using minimax
-        val evaluations = ByteArray(availableTurns.size) {
-            availableTurns[it].evaluateTurn(
-                (recDepth - 1).toByte(),
-                state = state.copyState(),
-                min = Byte.MAX_VALUE,
-                max = Byte.MIN_VALUE
-            )
-        }
-
-        // Make the best evaluated turn
-        val imin = evaluations.indexOfMin()
-        if (imin == -1) {
-            imin
-            evaluations.indexOfMin()
-        }
-        board.makeTurn(state, availableTurns[imin])
+            Result(availableTurns.getOrNull(evaluations.indexOfMin()))
+        }, onTimeLimit = {
+            Result(availableTurns.getOrNull(minValuePosition.toInt()))
+        }, onResult = {
+            board.makeTurn(state, it.value ?: return@runLongJob)
+            println(System.currentTimeMillis() - debugTime)
+        })
     }
 
     /**
@@ -47,7 +59,8 @@ class Bot (
         depth: Byte,
         state: Board.BoardState, // state.copyState()
         min: Byte,
-        max: Byte
+        max: Byte,
+        turnsPosition: Byte
     ): Byte {
         board.makeTurn(state, this)
 
@@ -57,7 +70,8 @@ class Bot (
             depth,
             state,
             min,
-            max
+            max,
+            turnsPosition
         )
     }
 
@@ -68,7 +82,8 @@ class Bot (
         depth: Byte,
         state: Board.BoardState,
         min: Byte,
-        max: Byte
+        max: Byte,
+        turnsPosition: Byte
     ): Byte {
         val availableTurns: List<Board.Point>? = board.getAvailableTurns(state)
         when {
@@ -77,13 +92,20 @@ class Bot (
                 return if ((recDepth - depth) % 2 == 0) score.x.toByte() else score.y.toByte()
             }
             (recDepth - depth) % 2 == 0 -> {
+                val score = state.getScore()
+                if (score.x - score.y > minValue) {
+                    minValue = score.x - score.y
+                    minValuePosition = turnsPosition
+                }
+
                 var maxEval = Byte.MIN_VALUE
                 for (i in availableTurns.indices) {
                     val evaluation = availableTurns[i].evaluateTurn(
                         (depth - 1).toByte(),
                         state = state.copyState(),
                         min = min,
-                        max = max
+                        max = max,
+                        turnsPosition = turnsPosition
                     )
                     maxEval = maxOf(maxEval, evaluation)
                     val newMax = maxOf(max, maxEval)
@@ -94,13 +116,20 @@ class Bot (
                 return maxEval
             }
             (recDepth - depth) % 2 == 1 -> {
+                val score = state.getScore()
+                if (score.y - score.x > minValue) {
+                    minValue = score.y - score.x
+                    minValuePosition = turnsPosition
+                }
+
                 var minEval = Byte.MAX_VALUE
                 for (i in availableTurns.indices) {
                     val evaluation = availableTurns[i].evaluateTurn(
                         (depth - 1).toByte(),
                         state = state.copyState(),
                         min = min,
-                        max = max
+                        max = max,
+                        turnsPosition = turnsPosition
                     )
                     minEval = minOf(minEval, evaluation)
                     val newMin = minOf(min, minEval)
@@ -142,4 +171,26 @@ class Bot (
     class GameOverException(
         message: String = "Game over"
     ) : RuntimeException(message)
+
+    private fun runLongJob(job: () -> Result<Board.Point>, onTimeLimit: () -> Result<Board.Point>, onResult: (Result<Board.Point>) -> Unit) {
+        val executor = Executors.newSingleThreadExecutor()
+        val future: Future<Result<Board.Point>> = executor.submit<Result<Board.Point>>(job)
+
+        onResult(try {
+            future.get(1980, TimeUnit.MILLISECONDS).also {
+                println("#GOODTIME")
+            }
+        } catch (e: TimeoutException) {
+            println("#TIMEOUT")
+            onTimeLimit()
+        })
+        executor.shutdownNow()
+    }
+
+    data class Result<T>(val value: T? = null)
 }
+
+// 0B 2 3
+// 1W 3 2
+// 2B 2 3
+// 3W 3 2

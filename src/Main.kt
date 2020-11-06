@@ -58,6 +58,7 @@ fun runGame(action: () -> Unit) {
         try {
             action()
         } catch (e: Bot.GameOverException) {
+            println("GAME IS OVER")
             isGameOver = true
         }
     } while (!isGameOver)

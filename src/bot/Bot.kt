@@ -5,9 +5,9 @@ import board.Board
 class Bot (
     private val board: Board,
     private val recDepth: Byte
-) {
+): IBot {
 
-    fun makeTurn(state: Board.BoardState, debugTime: Long = System.currentTimeMillis()) {
+    override fun makeTurn(state: Board.BoardState) {
 
         // Get available turns for bot.Bot
         val availableTurns = board.getAvailableTurns(state) ?: throw GameOverException()
@@ -32,8 +32,12 @@ class Bot (
         }
 
         // Make the best evaluated turn
-        board.makeTurn(state, availableTurns[evaluations.indexOfMin()])
-        println(System.currentTimeMillis() - debugTime)
+        val imin = evaluations.indexOfMin()
+        if (imin == -1) {
+            imin
+            evaluations.indexOfMin()
+        }
+        board.makeTurn(state, availableTurns[imin])
     }
 
     /**
@@ -47,11 +51,11 @@ class Bot (
     ): Byte {
         board.makeTurn(state, this)
 
-        //state.display()
+        state.inverseState()
 
         return minimax(
             depth,
-            state.apply { inverseState() },
+            state,
             min,
             max
         )
@@ -69,7 +73,8 @@ class Bot (
         val availableTurns: List<Board.Point>? = board.getAvailableTurns(state)
         when {
             availableTurns == null || depth == 0.toByte() -> {
-                return state.getScore().x.toByte()
+                val score = state.getScore()
+                return if ((recDepth - depth) % 2 == 0) score.x.toByte() else score.y.toByte()
             }
             (recDepth - depth) % 2 == 0 -> {
                 var maxEval = Byte.MIN_VALUE
@@ -113,7 +118,11 @@ class Bot (
      * Find the index of the minimal element of the array
      */
     private fun ByteArray.indexOfMin(): Int {
-        var minI = -1
+        var minI = if (size == 0) {
+            -1
+        } else {
+            0
+        }
         var min = Byte.MAX_VALUE
 
         forEachIndexed { i, elem ->

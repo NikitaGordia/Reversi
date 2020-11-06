@@ -98,18 +98,20 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
 
         companion object {
 
-            private const val C = 20
-            private const val B = 6
+            private const val C = 6
+            private const val B = 4
+            private const val G = 1
+            private const val R = 2
 
             private val PENALTIES = arrayOf(
                 //            0  1  2  3  4  5  6  7
                 /*0*/ arrayOf(C, B, B, B, B, B, B, C),
-                /*1*/ arrayOf(B, B, 1, 1, 1, 1, B, B),
-                /*2*/ arrayOf(B, 1, B, 1, 1, B, 1, B),
-                /*3*/ arrayOf(B, 1, 1, B, B, 1, 1, B),
-                /*4*/ arrayOf(B, 1, 1, B, B, 1, 1, B),
-                /*5*/ arrayOf(B, 1, B, 1, 1, B, 1, B),
-                /*6*/ arrayOf(B, B, 1, 1, 1, 1, B, B),
+                /*1*/ arrayOf(B, B, R, R, R, R, B, B),
+                /*2*/ arrayOf(B, R, B, G, G, B, R, B),
+                /*3*/ arrayOf(B, R, G, B, B, G, R, B),
+                /*4*/ arrayOf(B, R, G, B, B, G, R, B),
+                /*5*/ arrayOf(B, R, B, G, G, B, R, B),
+                /*6*/ arrayOf(B, B, R, R, R, R, B, B),
                 /*7*/ arrayOf(C, B, B, B, B, B, B, C)
             )
         }

@@ -1,6 +1,7 @@
 package board
 
 import java.util.*
+import kotlin.collections.ArrayDeque
 
 class BoardImpl(private val blackHole: Board.Point) : Board {
 
@@ -18,7 +19,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
     }
 
     override fun getAvailableTurns(state: Board.BoardState): List<Board.Point>? {
-        val turns = LinkedList<Board.Point>()
+        val turns = ArrayDeque<Board.Point>()
         var emptyPoints = 0
         for (i in 0 until 8)
             for (j in 0 until 8)

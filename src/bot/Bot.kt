@@ -48,7 +48,6 @@ class Bot(
             Result(availableTurns.getOrNull(minValuePosition.toInt()))
         }, onResult = {
             board.makeTurn(state, it.value ?: return@runLongJob)
-            println(System.currentTimeMillis() - debugTime)
         })
     }
 

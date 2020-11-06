@@ -50,7 +50,7 @@ fun main() {
                 scoreB < scoreW -> "B won".also { list += 'B' }
                 else -> "W won".also { list += 'W' }
             }
-            print("${list.count { it == 'B' }} / ${list.count { it == 'W' }}, $str")
+            println("${(list.count { it == 'B' }.toFloat() / list.size) * 100}%, ${list.count { it == 'B' }} / ${list.count { it == 'W' }}, $str")
         } catch (e: Exception) {
 
         }

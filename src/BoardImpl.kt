@@ -79,8 +79,8 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         x >= 0 && x < 8 && y >= 0 && y < 8 && !(x == blackHole.x && y == blackHole.y)
 
     data class BoardStateImpl(
-        private var matrix: Long = 68853694464,
-        private var enemyMatrix: Long = 34628173824
+        private var matrix: Long = 34359738368,//68853694464,
+        private var enemyMatrix: Long = 69659000832//34628173824
     ) : Board.BoardState {
 
         companion object {

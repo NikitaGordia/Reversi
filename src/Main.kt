@@ -5,9 +5,9 @@ fun main() {
     state.display()
     val turns = board.getAvailableTurns(state)
     print(turns)
-    board.makeTurn(state, turns[0])
-    state.display()
-
-    board.makeTurn(state, turns[1])
-    state.display()
+//    board.makeTurn(state, turns[0])
+//    state.display()
+//
+//    board.makeTurn(state, turns[1])
+//    state.display()
 }

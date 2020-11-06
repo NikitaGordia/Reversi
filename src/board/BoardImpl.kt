@@ -43,7 +43,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             posX += dirV[dir].x
             posY += dirV[dir].y
         } while (checkPoint(posX, posY) &&
-            state.get(posX, posX) == Board.BoardState.ENEMY_POINT
+            state.get(posX, posY) == Board.BoardState.ENEMY_POINT
         )
         if (checkPoint(posX, posY) && state.get(posX, posY) == Board.BoardState.MY_POINT) {
             occupate(state, x, y, dir)
@@ -70,7 +70,7 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             posX += dirV[dir].x
             posY += dirV[dir].y
         } while (checkPoint(posX, posY) &&
-            state.get(posX, posX) == Board.BoardState.ENEMY_POINT
+            state.get(posX, posY) == Board.BoardState.ENEMY_POINT
         )
         if (checkPoint(posX, posY) && state.get(posX, posY) == Board.BoardState.MY_POINT) {
             turns.add(Board.Point(x, y))

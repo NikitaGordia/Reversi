@@ -2,7 +2,7 @@ package board
 
 interface Board {
 
-    fun getAvailableTurns(state: BoardState): List<Point>
+    fun getAvailableTurns(state: BoardState): List<Point>?
 
     fun makeTurn(state: BoardState, turn: Point)
 

@@ -100,9 +100,9 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         }
 
         override fun takePoint(x: Int, y: Int) {
-            matrix = matrix or (1L shl ((x shl 3) + y))
-            if (get(enemyMatrix, x, y) > 0)
-                enemyMatrix = enemyMatrix xor (1L shl ((x shl 3) + y))
+            val pos = (x shl 3) + y
+            matrix = matrix or (1L shl pos)
+            enemyMatrix = enemyMatrix and (1L shl pos).inv()
         }
 
         override fun get(x: Int, y: Int): Byte = when {

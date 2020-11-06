@@ -24,7 +24,7 @@ class Bot(
             // Get available turns for bot.Bot
             when {
                 availableTurns.isEmpty() -> {
-                    //return@suspend Result<Board.Point>(null)
+                    return@runLongJob Result(null)
                 }
                 availableTurns.size == 1 -> {
                     board.makeTurn(state, availableTurns[0])
@@ -42,9 +42,9 @@ class Bot(
                 )
             }
 
-            Result(availableTurns[evaluations.indexOfMin()])
+            Result(availableTurns.getOrNull(evaluations.indexOfMin()))
         }, onTimeLimit = {
-            Result(availableTurns[minValuePosition.toInt()])
+            Result(availableTurns.getOrNull(minValuePosition.toInt()))
         }, onResult = {
             board.makeTurn(state, it.value ?: return@runLongJob)
             println(System.currentTimeMillis() - debugTime)

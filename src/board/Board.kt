@@ -2,7 +2,7 @@ package board
 
 interface Board {
 
-    fun getAvailableTurns(state: BoardState): List<Point>
+    fun getAvailableTurns(state: BoardState): List<Point>?
 
     fun makeTurn(state: BoardState, turn: Point)
 
@@ -34,3 +34,15 @@ interface Board {
         fun copyState(): BoardState
     }
 }
+/*
+*
+*01234567
+0........
+1........
+2........
+3...WWW..
+4...BW...
+5........
+6........
+7........
+* */

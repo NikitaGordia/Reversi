@@ -17,16 +17,18 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
         Board.Point(it.first, it.second)
     }
 
-    override fun getAvailableTurns(state: Board.BoardState): List<Board.Point> {
+    override fun getAvailableTurns(state: Board.BoardState): List<Board.Point>? {
         val turns = LinkedList<Board.Point>()
+        var emptyPoints = 0
         for (i in 0 until 8)
             for (j in 0 until 8)
                 if (checkPoint(i, j) && state.get(i, j) == Board.BoardState.EMPTY_POINT) {
+                    emptyPoints++
                     for (k in 0 until 8)
                         runSearch(state, i, j, k, turns)
                 }
         val uniq = TreeSet<Board.Point>(turns)
-        return uniq.toList()
+        return uniq.toList().takeIf { emptyPoints > 0 }
     }
 
     override fun makeTurn(state: Board.BoardState, turn: Board.Point) {

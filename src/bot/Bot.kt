@@ -15,13 +15,13 @@ class Bot(
     private var minValue: Int = Int.MAX_VALUE
     private var minValuePosition: Byte = 0
 
-    override fun makeTurn(state: Board.BoardState) {
+    override fun makeTurn(state: Board.BoardState): Board.Point? {
         minValue = Int.MAX_VALUE
         minValuePosition = 0
 
         val availableTurns = board.getAvailableTurns(state) ?: throw GameOverException()
 
-        runLongJob(job = {
+        val decisionPoint = runLongJob(job = {
             // Get available turns for bot.Bot
             when {
                 availableTurns.isEmpty() -> {
@@ -46,9 +46,9 @@ class Bot(
             Result(availableTurns.getOrNull(evaluations.indexOfMin()))
         }, onTimeLimit = {
             Result(availableTurns.getOrNull(minValuePosition.toInt()))
-        }, onResult = {
-            board.makeTurn(state, it.value ?: return@runLongJob)
         })
+        board.makeTurn(state, decisionPoint.value ?: return null)
+        return decisionPoint.value
     }
 
     /**
@@ -92,8 +92,8 @@ class Bot(
             }
             (recDepth - depth) % 2 == 0 -> {
                 val score = state.getScore()
-                if (score.x - score.y > minValue) {
-                    minValue = score.x - score.y
+                if (score.y - score.x < minValue) {
+                    minValue = score.y - score.x
                     minValuePosition = turnsPosition
                 }
 
@@ -116,8 +116,8 @@ class Bot(
             }
             (recDepth - depth) % 2 == 1 -> {
                 val score = state.getScore()
-                if (score.y - score.x > minValue) {
-                    minValue = score.y - score.x
+                if (score.x - score.y < minValue) {
+                    minValue = score.x - score.y
                     minValuePosition = turnsPosition
                 }
 
@@ -171,16 +171,17 @@ class Bot(
         message: String = "Game over"
     ) : RuntimeException(message)
 
-    private fun runLongJob(job: () -> Result<Board.Point>, onTimeLimit: () -> Result<Board.Point>, onResult: (Result<Board.Point>) -> Unit) {
+    private fun runLongJob(job: () -> Result<Board.Point>, onTimeLimit: () -> Result<Board.Point>): Result<Board.Point> {
         val executor = Executors.newSingleThreadExecutor()
         val future: Future<Result<Board.Point>> = executor.submit<Result<Board.Point>>(job)
 
-        onResult(try {
+        return try {
             future.get(1990, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {
             onTimeLimit()
-        })
-        executor.shutdownNow()
+        }.also {
+            executor.shutdownNow()
+        }
     }
 
     data class Result<T>(val value: T? = null)

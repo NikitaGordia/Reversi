@@ -6,21 +6,23 @@ import board.Board.BoardState.Companion.MY_POINT
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.math.max
-import kotlin.math.round
 
 class BoardImpl(private val blackHole: Board.Point) : Board {
 
-    private val dirV: List<Board.Point> = listOf(
-        -1 to -1,
-        -1 to 0,
-        -1 to 1,
-        0 to 1,
-        1 to 1,
-        1 to 0,
-        1 to -1,
-        0 to -1
-    ).map {
-        Board.Point(it.first, it.second)
+    companion object {
+
+        val dirV: List<Board.Point> = listOf(
+            -1 to -1,
+            -1 to 0,
+            -1 to 1,
+            0 to 1,
+            1 to 1,
+            1 to 0,
+            1 to -1,
+            0 to -1
+        ).map {
+            Board.Point(it.first, it.second)
+        }
     }
 
     override fun getAvailableTurns(state: Board.BoardState): List<Board.Point>? {
@@ -105,8 +107,9 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             private const val G = 1 //1
             private const val R = 2 //2
 
-            private const val BACK_PENALTIES = 0.2 //0.3 - 99, 98, 99; 0,2 - 99; 0.1 -
+            private const val BACK_PENALTIES = 0.3 //0.3
 
+            private val INSIDE_WIN_PER_THRESHOLD = arrayOf(0, 0, 0, 0, 0, 0, 0, 2, 3)
 
             private val PENALTIES = arrayOf(
                 //            0  1  2  3  4  5  6  7
@@ -138,17 +141,38 @@ class BoardImpl(private val blackHole: Board.Point) : Board {
             var w = 0
             for (i in 0 until 8)
                 for (j in 0 until 8) {
-                    val score = PENALTIES[i][j]
+                    var score = PENALTIES[i][j]
+
+//                    if (get(matrix, i, j) > 0) {
+//                        var bInsideW = 0
+//                        for (k in 0 until 8) {
+//                            val toX = i + dirV[k].x
+//                            val toY = j + dirV[k].y
+//                            if (get(enemyMatrix, toX, toY) > 0) bInsideW++
+//                        }
+//                        score -= (BACK_PENALTIES * INSIDE_WIN_PER_THRESHOLD[bInsideW]).toInt()
+//                    }
+//
+//                    if (get(enemyMatrix, i, j) > 0) {
+//                        var wInsideB = 0
+//                        for (k in 0 until 8) {
+//                            val toX = i + dirV[k].x
+//                            val toY = j + dirV[k].y
+//                            if (get(matrix, toX, toY) > 0) wInsideB++
+//                        }
+//                        score += INSIDE_WIN_PER_THRESHOLD[wInsideB]
+//                    }
+
                     if (get(matrix, i, j) > 0) {
                         b += score
                         w -= (BACK_PENALTIES * score).toInt()
                     }
                     if (get(enemyMatrix, i, j) > 0) {
                         w += score
-                        b += (BACK_PENALTIES * score).toInt()
+                        b -= (BACK_PENALTIES * score).toInt()
                     }
                 }
-            return Board.Point(b, max(w, 1))
+            return Board.Point(max(b, 0), max(w, 0))
         }
 
         override fun inverseState() {

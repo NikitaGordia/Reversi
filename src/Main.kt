@@ -6,11 +6,16 @@ import bot.RandomBot
 import java.lang.Exception
 
 fun main() {
+    val cmdWorker = CommandLineWorker()
+    cmdWorker.runGame()
+}
+
+fun runTesting() {
 
     val list = arrayListOf<Char>()
     val blackHole = Board.Point(2, 4)
 
-    repeat(100) {
+    repeat(1000) {
         try {
 
             val board = BoardImpl(blackHole)
@@ -34,8 +39,6 @@ fun main() {
                     prevStateCounter = 3
                 }
                 prevState = state.copyState()
-                val score = state.getScore()
-                if (score.x == 0 || score.y == 0) throw Bot.GameOverException()
 
                 turn++
                 state.inverseState()
